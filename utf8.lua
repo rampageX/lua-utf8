@@ -17,6 +17,59 @@ local ustring = {} -- table to index equivalent string.* functions
 
 -- http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
 
+
+
+
+-- Provides UTF-8 aware string functions implemented in pure lua (try to follow the lua 5.3 API):
+-- * string.utf8len(s)
+-- * string.utf8sub(s, i, j)
+-- * string.utf8reverse(s)
+-- * string.utf8char(unicode)
+-- * string.utf8unicode(s, i, j)
+-- * string.utf8gensub(s, sub_len)
+
+local function lua53_utf8_char(...)
+	local r = ""
+	local char = string.char
+	for i,v in ipairs({...}) do
+		if type(v) ~= "number" then
+			error("bad argument #"..i.." to 'char' (number expected, got "..type(v)..")", 2)
+		end
+		r=r..char(v)
+	end
+	return r
+end
+
+--local lua53_utf8_charpattern = "[%z\1-\x7F\xC2-\xF4][\x80-\xBF]*"
+local lua53_utf8_charpattern = "[%z\1-\127\194-\244][\128-\191]*"
+
+local function lua53_utf8_codes(s)
+end
+--for p, c in utf8.codes(s) do body end
+
+
+local function lua53_utf8_codepoint(s [, i [, j]])
+end
+
+
+local function lua53_utf8_len(s [, i [, j]])
+end
+
+local function lua53_utf8_offset(s, n [, i])
+end
+
+
+
+
+
+
+
+
+
+-- ############################# --
+
+
+
 -- my custom type for Unicode String
 local utf8type = "ustring"
 
@@ -49,7 +102,7 @@ local function table_sub(t, i, j)
 end
 local function utf8_range(uobj, i, j)
 	local t = table_sub(uobj, i, j)
-	return setmetatable(t, getmetatable(uobj)) -- or utf8_object() 
+	return setmetatable(t, getmetatable(uobj)) -- or utf8_object()
 end
 
 local function utf8_typeof(obj)
