@@ -48,7 +48,15 @@ print(udata:sub(4,5)) -- be able to use the sub() like a string
 
  * See all other utf8 implementation
  * Try to follow the lua5.3's utf8 API
- * ...
+ * Deal with/without BOM
+   http://www.lua.org/source/5.2/lauxlib.c.html#skipBOM
+   http://www.unicode.org/faq/utf_bom.html#bom4
+ * See about this utf8 alternative implementation : https://gist.github.com/markandgo/5776124
+
+# misc
+
+ * http://developer.coronalabs.com/code/utf-8-encode-and-decode
+ * http://developer.coronalabs.com/code/utf-8-conversion-utility
 
 # License
 
