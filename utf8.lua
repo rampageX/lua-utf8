@@ -29,23 +29,56 @@ local ustring = {} -- table to index equivalent string.* functions
 -- * string.utf8gensub(s, sub_len)
 
 local function lua53_utf8_char(...)
-	local r = ""
-	local char = string.char
 	for i,v in ipairs({...}) do
 		if type(v) ~= "number" then
 			error("bad argument #"..i.." to 'char' (number expected, got "..type(v)..")", 2)
 		end
-		r=r..char(v)
 	end
-	return r
+	return string.char(...)
 end
 
 --local lua53_utf8_charpattern = "[%z\1-\x7F\xC2-\xF4][\x80-\xBF]*"
 local lua53_utf8_charpattern = "[%z\1-\127\194-\244][\128-\191]*"
 
-local function lua53_utf8_codes(s)
+--local function lua53_utf8_next(o, i)
+--	i = i or 0
+--	i = i + 1
+--	assert(type(o) == "string", "argument#1 must be a string")
+--	local v = ????
+--	if v then
+--		return i, v
+--	end
+--end
+local function ustring_utf8_next(o, i)
+	assert(type(o) == "table", "argument#1 must be an ustring")
+	i = i or 0
+	i = i + 1
+	local v = o[i]
+	if v then
+		return i, v
+	end
 end
+
+		return function(k)
+			local v
+			k, v = next(s, k)
+			if k then return k, strupper(v) end
+		end
+end
+
+local function lua53_utf8_codes(o)
+	if type(o) == "table" then
+		-- should be a ustring
+		return ustring_utf8_next, o
+	elseif type(o) == "string" then
+		return string.gmatch(o, "("..lua53_utf8_charpattern..")")
+	else
+		error("lua53_utf8_codes must be a string (or ustring)", 2)
+	end
+end
+
 --for p, c in utf8.codes(s) do body end
+--for c in string.gmatch(s, "("..lua53_utf8_charpattern..")") do
 
 
 local function lua53_utf8_codepoint(s [, i [, j]])
@@ -122,7 +155,7 @@ local function utf8_tostring(obj)
 end
 
 local function utf8_sub(uobj, i, j)
-        assert(i, "sub: i must exists")
+	assert(i, "sub: i must exists")
 	return utf8_range(uobj, i, j)
 end
 
