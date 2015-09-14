@@ -28,14 +28,56 @@ local ustring = {} -- table to index equivalent string.* functions
 -- * string.utf8unicode(s, i, j)
 -- * string.utf8gensub(s, sub_len)
 
+local floor = math.floor
+local string_char = string.char
+
+-- http://en.wikipedia.org/wiki/Utf8
+-- http://developer.coronalabs.com/code/utf-8-conversion-utility
+local function utf8char(unicode)
+	if unicode <= 0x7F then return string_char(unicode) end
+
+	if (unicode <= 0x7FF) then
+		local Byte0 = 0xC0 + floor(unicode / 0x40)
+		local Byte1 = 0x80 + (unicode % 0x40)
+		return string_char(Byte0, Byte1)
+	end
+
+	if (unicode <= 0xFFFF) then
+		local Byte0 = 0xE0 +  floor(unicode / 0x1000) -- 0x1000 = 0x40 * 0x40
+		local Byte1 = 0x80 + (floor(unicode / 0x40) % 0x40)
+		local Byte2 = 0x80 + (unicode % 0x40)
+		return string_char(Byte0, Byte1, Byte2)
+	end
+
+	if (unicode <= 0x10FFFF) then
+		local code = unicode
+		local Byte3= 0x80 + (code % 0x40)
+		code       = floor(code / 0x40)
+		local Byte2= 0x80 + (code % 0x40)
+		code       = floor(code / 0x40)
+		local Byte1= 0x80 + (code % 0x40)
+		code       = floor(code / 0x40)
+		local Byte0= 0xF0 + code
+
+		return string_char(Byte0, Byte1, Byte2, Byte3)
+	end
+
+	error 'Unicode cannot be greater than U+10FFFF!'
+end
+
 local function lua53_utf8_char(...)
+	local r = {}
 	for i,v in ipairs({...}) do
 		if type(v) ~= "number" then
 			error("bad argument #"..i.." to 'char' (number expected, got "..type(v)..")", 2)
 		end
+		r[i] = utf8char(v)
 	end
-	return string.char(...)
+	return table.concat(r, "")
 end
+--for _, n in ipairs{12399, 21560, 12356, 12414, 12377} do print(utf8char(n)) end
+--print( lua53_utf8_char( 12399, 21560, 12356, 12414, 12377 ) )
+
 
 --local lua53_utf8_charpattern = "[%z\1-\x7F\xC2-\xF4][\x80-\xBF]*"
 local lua53_utf8_charpattern = "[%z\1-\127\194-\244][\128-\191]*"
@@ -49,6 +91,7 @@ local lua53_utf8_charpattern = "[%z\1-\127\194-\244][\128-\191]*"
 --		return i, v
 --	end
 --end
+
 local function ustring_utf8_next(o, i)
 	assert(type(o) == "table", "argument#1 must be an ustring")
 	i = i or 0
@@ -59,12 +102,30 @@ local function ustring_utf8_next(o, i)
 	end
 end
 
+--[[
+local function ustring_utf8_pairs()
 		return function(k)
 			local v
 			k, v = next(s, k)
 			if k then return k, strupper(v) end
 		end
 end
+]]--
+
+local t = {"a", "b", "c"}
+
+local function utfpairs(t)
+	local pos
+	return ustring_utf8_next, t, nil
+end
+
+
+print("--")
+for p,v in utfpairs(t) do
+	print(p,v)
+end
+print("--")
+os.exit()
 
 local function lua53_utf8_codes(o)
 	if type(o) == "table" then
@@ -81,15 +142,15 @@ end
 --for c in string.gmatch(s, "("..lua53_utf8_charpattern..")") do
 
 
-local function lua53_utf8_codepoint(s [, i [, j]])
-end
+--local function lua53_utf8_codepoint(s [, i [, j]])
+--end
 
 
-local function lua53_utf8_len(s [, i [, j]])
-end
+--local function lua53_utf8_len(s [, i [, j]])
+--end
 
-local function lua53_utf8_offset(s, n [, i])
-end
+--local function lua53_utf8_offset(s, n [, i])
+--end
 
 
 
